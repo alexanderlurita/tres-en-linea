@@ -1,27 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 import confetti from 'canvas-confetti'
-import { TURNS, WINNER_COMBOS } from '../constans'
-import { resetGameFromStorage, saveGameToStorage } from '../utils/storage'
+import { TURNS, WINNER_COMBOS } from '../constants.js'
+import { resetGameFromStorage, saveGameToStorage } from '../utils/storage.js'
+import { GameContext } from '../contexts/game.jsx'
+import { useComputer } from './useComputer.jsx'
 
 export function useGameLogic() {
-  const [gameMoves, setGameMoves] = useState(() => {
-    const isGameInProgress = localStorage.getItem('gameProgress')
+  const {
+    gameMoves,
+    setGameMoves,
+    turn,
+    setTurn,
+    winner,
+    setWinner,
+    disableReset,
+    setDisableReset,
+    compActive
+  } = useContext(GameContext)
 
-    return isGameInProgress
-      ? JSON.parse(isGameInProgress)
-      : new Array(9).fill(null)
-  })
-  const [turn, setTurn] = useState(() => {
-    const isTurnInProgress = localStorage.getItem('turnProgress')
-
-    return isTurnInProgress ? JSON.parse(isTurnInProgress) : TURNS.X
-  })
-  const [winner, setWinner] = useState(() => {
-    const isWinner = localStorage.getItem('winner')
-
-    return isWinner ? JSON.parse(isWinner) : null
-  })
-  const [disableReset, setDisableReset] = useState(true)
+  const { computerMove } = useComputer()
 
   const updateSquare = (index) => {
     const newGameMoves = [...gameMoves]
@@ -29,10 +26,15 @@ export function useGameLogic() {
     if (newGameMoves[index] || winner !== null) return
 
     newGameMoves[index] = turn
-    const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X
+    const newTurn = turn === TURNS.X && !compActive ? TURNS.O : TURNS.X
 
     setGameMoves(newGameMoves)
     setTurn(newTurn)
+
+    if (compActive && !newGameMoves.every((el) => el !== null)) {
+      const newMoveComp = computerMove(newGameMoves)
+      newGameMoves[newMoveComp] = TURNS.O
+    }
 
     const winnerStatus = verifyWinner(newGameMoves)
 

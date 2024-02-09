@@ -1,4 +1,8 @@
-export default function WinnerModal({ winner, resetGame }) {
+import { useGameLogic } from '../hooks/useGameLogic.jsx'
+
+export default function WinnerModal() {
+  const { winner, resetGame } = useGameLogic()
+
   if (winner === null) return null
 
   return (
