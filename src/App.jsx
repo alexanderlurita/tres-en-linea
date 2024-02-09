@@ -1,83 +1,29 @@
-import { useState } from "react";
-import "./App.css";
-import { TURNS, WINNER_COMBOS } from "./constans";
-import confetti from "canvas-confetti";
-import WinnerModal from "./components/WinnerModal";
+import './App.css'
+import WinnerModal from './components/WinnerModal'
+import Square from './components/Square'
+import TurnInfo from './components/TurnInfo'
+import { useGameLogic } from './hooks/useGameLogic'
 
-function App() {
-  const [gameMoves, setGameMoves] = useState(new Array(9).fill(null));
-  const [turn, setTurn] = useState(TURNS.X);
-
-  const [winner, setWinner] = useState(null);
-
-  const updateSquare = (index) => {
-    const newGameMoves = [...gameMoves];
-
-    if (newGameMoves[index] || winner !== null) return;
-
-    newGameMoves[index] = turn;
-    const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X;
-
-    setGameMoves(newGameMoves);
-    setTurn(newTurn);
-
-    const winnerStatus = verifyWinner(newGameMoves);
-
-    if (winnerStatus) {
-      confetti();
-      setWinner(winnerStatus);
-    } else if (winnerStatus === false) {
-      setWinner(winnerStatus);
-    }
-  };
-
-  const verifyWinner = (gameMoves) => {
-    for (const combo of WINNER_COMBOS) {
-      const [a, b, c] = combo;
-      if (
-        gameMoves[a] &&
-        gameMoves[a] === gameMoves[b] &&
-        gameMoves[a] === gameMoves[c]
-      ) {
-        return gameMoves[a];
-      }
-    }
-
-    if (gameMoves.every((move) => move !== null)) {
-      return false;
-    }
-
-    return null;
-  };
-
-  const resetGame = () => {
-    setGameMoves(new Array(9).fill(null));
-    setTurn(TURNS.X);
-    setWinner(null);
-  };
+export default function App() {
+  const { gameMoves, turn, winner, disableReset, updateSquare, resetGame } =
+    useGameLogic()
 
   return (
-    <main className="game-container">
+    <main className='game-container'>
       <h1>Tic tac toe</h1>
-      <button onClick={resetGame}>Reiniciar juego</button>
+      <button onClick={resetGame} disabled={disableReset}>
+        Reiniciar juego
+      </button>
 
-      <div className="card-grid">
+      <div className='card-grid'>
         {gameMoves.map((el, index) => (
-          <div
-            className="card-item"
-            key={index}
-            onClick={() => updateSquare(index)}
-          >
-            {el}
-          </div>
+          <Square key={index} symbol={el} update={updateSquare} index={index} />
         ))}
       </div>
 
-      <div className="turn-info">El turno es de: {turn}</div>
+      <TurnInfo turn={turn} />
 
       <WinnerModal winner={winner} resetGame={resetGame} />
     </main>
-  );
+  )
 }
-
-export default App;
