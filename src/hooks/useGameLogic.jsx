@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { TURNS, WINNER_COMBOS } from '../constans'
+import { resetGameFromStorage, saveGameToStorage } from '../utils/storage'
 
 export function useGameLogic() {
-  const [gameMoves, setGameMoves] = useState(new Array(9).fill(null))
-  const [turn, setTurn] = useState(TURNS.X)
-  const [winner, setWinner] = useState(null)
+  const [gameMoves, setGameMoves] = useState(() => {
+    const isGameInProgress = localStorage.getItem('gameProgress')
+
+    return isGameInProgress
+      ? JSON.parse(isGameInProgress)
+      : new Array(9).fill(null)
+  })
+  const [turn, setTurn] = useState(() => {
+    const isTurnInProgress = localStorage.getItem('turnProgress')
+
+    return isTurnInProgress ? JSON.parse(isTurnInProgress) : TURNS.X
+  })
+  const [winner, setWinner] = useState(() => {
+    const isWinner = localStorage.getItem('winner')
+
+    return isWinner ? JSON.parse(isWinner) : null
+  })
   const [disableReset, setDisableReset] = useState(true)
 
   const updateSquare = (index) => {
@@ -27,6 +42,12 @@ export function useGameLogic() {
     } else if (winnerStatus === false) {
       setWinner(winnerStatus)
     }
+
+    saveGameToStorage({
+      game: newGameMoves,
+      turn: newTurn,
+      winner: winnerStatus
+    })
   }
 
   const verifyWinner = (gameMoves) => {
@@ -53,6 +74,8 @@ export function useGameLogic() {
     setTurn(TURNS.X)
     setWinner(null)
     setDisableReset(true)
+
+    resetGameFromStorage()
   }
 
   useEffect(() => {
