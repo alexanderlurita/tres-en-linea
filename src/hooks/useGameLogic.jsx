@@ -28,22 +28,27 @@ export function useGameLogic() {
     newGameMoves[index] = turn
     const newTurn = turn === TURNS.X && !compActive ? TURNS.O : TURNS.X
 
-    setGameMoves(newGameMoves)
-    setTurn(newTurn)
+    let winnerStatus
 
-    if (compActive && !newGameMoves.every((el) => el !== null)) {
+    const checkWinnerStatus = () => {
+      winnerStatus = verifyWinner(newGameMoves)
+      if (winnerStatus) {
+        confetti()
+      }
+      setWinner(winnerStatus)
+    }
+
+    checkWinnerStatus()
+
+    if (winnerStatus === null && compActive) {
       const newMoveComp = computerMove(newGameMoves)
       newGameMoves[newMoveComp] = TURNS.O
+
+      checkWinnerStatus()
     }
 
-    const winnerStatus = verifyWinner(newGameMoves)
-
-    if (winnerStatus) {
-      confetti()
-      setWinner(winnerStatus)
-    } else if (winnerStatus === false) {
-      setWinner(winnerStatus)
-    }
+    setGameMoves(newGameMoves)
+    setTurn(newTurn)
 
     saveGameToStorage({
       game: newGameMoves,

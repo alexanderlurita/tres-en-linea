@@ -19,7 +19,7 @@ export default function Controls() {
           border: `2px solid ${!compActive ? '#98FB98' : '#FF6961'}`
         }}
       >
-        {!compActive ? 'Activar' : 'Desactivar'} PC
+        {!compActive ? 'Activar' : 'Desactivar'} CPU
       </button>
     </div>
   )
